@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Exercice — Ponctuation et phrase lisible</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+
+:root{--prune:#8C1E70;--prune-fonce:#5E1349;--prune-clair:#F4E6EE;--accent:#C77BAA;
+ --vert:#283C28;--gris:#3C3C3C;--gris-moyen:#8A7A85;--filet:#E8DCE5;--creme:#FAF6F8;
+ --ok:#2F7A4F;--ko:#B23B3B;--amb:#B5852A;}
+*{box-sizing:border-box}
+body{margin:0;background:var(--creme);color:var(--gris);
+ font-family:"Nunito","Segoe UI",Helvetica,Arial,sans-serif;font-size:16px;line-height:1.62}
+.wrap{max-width:900px;margin:0 auto;padding:0 18px 60px}
+header.bandeau{background:var(--prune-fonce);color:#fff;padding:18px 0;border-bottom:4px solid var(--accent)}
+header.bandeau .wrap{padding-bottom:0}
+.chapitre{font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;color:#EAD3E3}
+.chapitre span{color:var(--accent);margin:0 6px}
+h1{font-family:Georgia,"Times New Roman",serif;font-size:27px;line-height:1.25;margin:8px 0 4px;color:#fff}
+.sous{color:#EAD3E3;font-size:14.5px;margin:0}
+h2{font-family:Georgia,"Times New Roman",serif;font-size:20px;color:var(--prune-fonce);
+ margin:34px 0 0;padding-bottom:8px;border-bottom:2px solid var(--filet)}
+h2 .num{color:var(--accent);margin-right:8px}
+h3{font-size:15px;color:var(--vert);margin:20px 0 8px;letter-spacing:.02em}
+.carte{background:#fff;border:1px solid var(--filet);border-radius:10px;padding:20px 22px;margin:18px 0;
+ box-shadow:0 1px 2px rgba(94,19,73,.05)}
+.enc{background:var(--prune-clair);border-left:5px solid var(--prune);padding:14px 18px;
+ border-radius:0 8px 8px 0;margin:18px 0;font-size:15.2px}
+.enc .t{display:block;font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;
+ font-weight:800;color:var(--prune-fonce);margin-bottom:6px}
+.enc.al{background:#FBF4F4;border-left-color:var(--ko)}.enc.al .t{color:var(--ko)}
+.enc.ci{background:#FCF8F0;border-left-color:var(--amb)}.enc.ci .t{color:#8A6418}
+.situ{background:#FCF9FB;border:1px dashed var(--filet);border-radius:8px;padding:16px 18px;margin:16px 0;font-size:15.2px}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0}
+.duo>div{background:#fff;border:1px solid var(--filet);border-radius:9px;padding:15px 17px;font-size:14.8px}
+.duo .h{font-weight:800;color:var(--prune-fonce);margin-bottom:7px;font-size:14.5px}
+.tri{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0}
+.tri>div{background:#fff;border:1px solid var(--filet);border-radius:9px;padding:14px 15px;font-size:14.3px}
+.quad{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+.quad>div{background:#fff;border:1px solid var(--filet);border-radius:9px;padding:12px 13px;font-size:13.6px}
+.quad .h{font-weight:800;color:var(--prune-fonce);margin-bottom:6px;font-size:13px;
+ text-transform:uppercase;letter-spacing:.04em}
+.tri .h{font-weight:800;color:var(--prune-fonce);margin-bottom:6px;font-size:13.5px;
+ text-transform:uppercase;letter-spacing:.05em}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.8px;background:#fff}
+th,td{border:1px solid var(--filet);padding:9px 12px;text-align:left}
+thead th{background:var(--prune-clair);color:var(--prune-fonce);font-size:13.5px}
+tbody th{font-weight:600;color:var(--gris)}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tr.tot td,tr.tot th{background:#FBF3F8;font-weight:800;color:var(--prune-fonce)}
+.dl{display:inline-flex;align-items:center;gap:9px;background:var(--prune);color:#fff;text-decoration:none;
+ padding:11px 20px;border-radius:8px;font-weight:700;font-size:15px;margin:20px 0 4px}
+.dl:hover{background:var(--prune-fonce)}
+ol.q{padding-left:0;list-style:none;counter-reset:q}
+ol.q>li{margin:16px 0;padding-left:38px;position:relative}
+ol.q>li::before{counter-increment:q;content:counter(q);position:absolute;left:0;top:1px;
+ width:26px;height:26px;border-radius:50%;background:var(--prune-clair);color:var(--prune-fonce);
+ font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+b,strong{color:var(--vert)}
+footer{text-align:center;font-size:12.5px;color:var(--gris-moyen);padding:26px 18px 12px;
+ border-top:1px solid var(--filet);margin-top:44px}
+@media(max-width:860px){.quad{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.duo,.tri,.quad{grid-template-columns:1fr}h1{font-size:22px}}
+@media print{body{background:#fff}.dl{display:none}header.bandeau{background:#5E1349 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+
+
+.champ{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:11px 0;
+ padding:11px 13px;background:#FCF9FB;border:1px solid var(--filet);border-radius:9px}
+.champ .lb{flex:1 1 340px;font-size:15px}
+.champ .pts{font-size:12px;color:var(--gris-moyen);white-space:nowrap}
+input.num,select.ch{font-family:inherit;font-size:15px;padding:9px 12px;border:1.5px solid var(--filet);
+ border-radius:8px;background:#fff;color:var(--gris);min-width:210px}
+input.num{min-width:150px;text-align:right;font-variant-numeric:tabular-nums}
+input.num:focus,select.ch:focus{outline:none;border-color:var(--prune)}
+input.num:disabled,select.ch:disabled{background:#F1EBEF;color:var(--gris-moyen);cursor:not-allowed}
+.champ.just{border-color:#BFE0CC;background:#F3FAF5}
+.champ.faux{border-color:#EFC9C9;background:#FDF5F5}
+.verdict{font-weight:800;font-size:13px;white-space:nowrap}
+.verdict.ok{color:var(--ok)}.verdict.ko{color:var(--ko)}
+.btn{display:inline-flex;align-items:center;gap:9px;background:var(--prune);color:#fff;border:0;
+ padding:12px 22px;border-radius:8px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer}
+.btn:hover{background:var(--prune-fonce)}
+.btn:disabled{background:#C9B7C3;cursor:not-allowed}
+.btn.sec{background:#fff;color:var(--prune-fonce);border:1.5px solid var(--filet)}
+.btn.sec:hover{background:var(--prune-clair)}
+.barre{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:16px}
+.fige{display:inline-block;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:800;
+ color:var(--prune-fonce);background:var(--prune-clair);padding:6px 11px;border-radius:20px}
+.corr{display:none;margin-top:16px}.corr.on{display:block}
+.score{display:flex;flex-wrap:wrap;gap:18px;align-items:baseline;
+ background:var(--prune-fonce);color:#fff;border-radius:10px;padding:18px 22px;margin:18px 0}
+.score .gros{font-family:Georgia,serif;font-size:32px;font-weight:700;color:#fff}
+.score .lib{font-size:14px;color:#EAD3E3}
+.opt{display:block;background:#fff;border:1.5px solid var(--filet);border-radius:9px;
+ padding:11px 14px;margin:8px 0;font-size:15px;cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt input{margin-right:10px}
+.opt.sel{border-color:var(--prune);background:var(--prune-clair)}
+.opt.bonne{border-color:var(--ok);background:#F3FAF5}
+.opt.mauvaise{border-color:var(--ko);background:#FDF5F5}
+.opt.verrou{cursor:not-allowed}
+.qbloc{background:#fff;border:1px solid var(--filet);border-radius:10px;padding:18px 20px;margin:16px 0}
+.qnum{font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;font-weight:800;color:var(--accent)}
+.qth{display:inline-block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;font-weight:800;
+ color:var(--prune-fonce);background:var(--prune-clair);padding:4px 9px;border-radius:20px;margin-left:8px}
+.qen{font-size:16.5px;font-weight:700;color:var(--vert);margin:8px 0 4px}
+.multi{font-size:12.5px;color:var(--gris-moyen);font-style:italic;margin-bottom:6px}
+.prog{height:8px;background:var(--filet);border-radius:20px;overflow:hidden;margin:14px 0 4px}
+.prog i{display:block;height:100%;background:var(--prune);width:0;transition:width .25s}
+.sticky{position:sticky;bottom:0;background:var(--creme);padding:12px 0;border-top:1px solid var(--filet)}
+@media print{.btn,.sticky{display:none}}
+
+
+#depot .depot-f{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0 4px}
+#depot .depot-f label{display:flex;flex-direction:column;font-size:13px;font-weight:700;color:var(--prune-fonce,#5E1349);flex:1 1 200px}
+#depot .depot-f input{margin-top:4px;padding:10px 12px;border:1px solid #D9C7D3;border-radius:8px;font:inherit;font-size:15px;font-weight:400;color:#3C3C3C;background:#fff}
+#depot .depot-b{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0 6px}
+#depot .depot-b button{display:inline-flex;align-items:center;gap:8px;background:var(--prune,#8C1E70);color:#fff;border:0;padding:12px 22px;border-radius:8px;font:inherit;font-weight:800;font-size:15px;cursor:pointer}
+#depot .depot-b button:hover{background:var(--prune-fonce,#5E1349)}
+#depot #pdfErr{color:var(--ko,#B23B3B);font-weight:700;font-size:14px}
+#depot #pdfOk{color:var(--ok,#2F7A4F);font-weight:700;font-size:14px}
+#depot .aide{font-size:12.5px;color:var(--gris-moyen,#8A7A85);margin:6px 0 0}
+#depot .aide a{color:var(--prune,#8C1E70)}
+
+.phrase{flex:1 1 360px;font-size:15.5px}
+.phrase .trou{display:inline-block;min-width:70px;border-bottom:2px dotted var(--accent);text-align:center;color:var(--accent);font-weight:800}
+select.ch{min-width:170px}
+</style></head>
+<body>
+<header class="bandeau"><div class="wrap">
+ <div class="chapitre">Écrits professionnels · @learning <span>/</span> Séquence 3</div><h1>Ponctuer juste et écrire lisible</h1><p class="sous">Exercice d'entraînement — 4 ateliers, 27 points, correction immédiate</p>
+</div></header>
+<div class="wrap">
+
+<div class="carte">
+<div class="enc"><span class="t">CE QUE VOUS ALLEZ FAIRE</span>Quatre ateliers, du plus guidé au plus proche de la rédaction réelle. Pour chaque phrase, choisissez le signe, la forme ou le mot qui convient à l'emplacement signalé. <b>Une fois un atelier validé, vos réponses sont figées</b> et la correction s'affiche : lisez-la avant de passer au suivant. Vous pouvez recommencer l'exercice entier à tout moment, ce qui remet tout à zéro. Aucune note n'est transmise automatiquement : à la fin, vous téléchargez votre bilan en PDF et <b>vous le déposez dans 360Learning</b>.</div>
+<div class="enc ci"><span class="t">CE QUE VOUS POUVEZ GARDER SOUS LES YEUX</span>La fiche mémo de la séquence. Le but n'est pas de deviner, mais de pouvoir dire, pour chaque signe et chaque majuscule, quelle règle le justifie.</div>
+</div>
+
+<div id="ateliers"></div>
+<div id="final"></div>
+<div id="depotZone" style="display:none"><div id="depot">
+<h2><span class="num">6 ·</span>Votre PDF à déposer</h2>
+<div class="carte">
+<div class="enc ci depot360"><span class="t">À DÉPOSER DANS 360LEARNING</span>Téléchargez votre bilan d'exercice au format PDF, puis <b>déposez-le dans l'activité de dépôt qui suit</b> dans 360Learning. Sans ce dépôt, l'activité n'est pas considérée comme réalisée.</div>
+<div class="depot-f" id="pdfChamps">
+ <label>Nom<input id="pdfNom" autocomplete="family-name"></label>
+ <label>Prénom<input id="pdfPrenom" autocomplete="given-name"></label>
+</div>
+<div class="depot-b"><button type="button" id="pdfBtn">⬇ Télécharger mon PDF</button><span id="pdfErr"></span><span id="pdfOk"></span></div>
+<p class="aide">Si le téléchargement ne démarre pas, <a href="#" id="pdfOuvrir">ouvrez le PDF dans un nouvel onglet</a> puis enregistrez-le.</p>
+</div>
+</div></div>
+
+<div class="barre sticky">
+ <button class="btn sec" id="rejouer">↻ Recommencer l'exercice</button>
+ <span style="font-size:13px;color:var(--gris-moyen)">Le rejeu efface toutes les réponses et les corrections.</span>
+</div>
+
+<footer>TMK Performances - N° Siret : 49841924100027 - Code NAF : 8559A</footer>
+</div>
+<script>
+/* ---------- PDF à déposer dans 360Learning (jsPDF 2.5.1) ----------
+   Module commun à toutes les activités du DA : bandeau prune, identité,
+   score, titres, paragraphes, tableaux, blocs de correction, pied de page
+   TMK et numérotation. Le texte passe par txt() : balises retirées et
+   caractères hors WinAnsi remplacés, sans quoi jsPDF les rend en charabia. */
+const PDFTMK = (function(){
+ const C = {prune:[94,19,73], rose:[199,123,170], pale:[244,230,238], filet:[232,220,229],
+            texte:[60,60,60], gris:[138,122,133], ok:[47,122,79], ko:[178,59,59], moyen:[176,120,20]};
+ const W = new Set('€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ');
+ const REMPL = {'①':'1)','②':'2)','③':'3)','④':'4)','⑤':'5)','⑥':'6)','→':'->','≤':'<=','≥':'>=',
+   '✓':'','✔':'','✗':'','✘':'','◐':'','↻':'','⬇':'',' ':' ',' ':' ',' ':' ','‑':'-','‐':'-'};
+ function txt(s){
+  if(s===null||s===undefined) return '';
+  const d = document.createElement('div');
+  d.innerHTML = String(s).replace(/<br\s*\/?>/gi,'\n').replace(/<\/(p|li|div)>/gi,'\n');
+  let t = d.textContent;
+  t = [...t].map(c => c in REMPL ? REMPL[c] : c).join('');
+  t = [...t].filter(c => { const k = c.charCodeAt(0); return c==='\n' || (k>=32 && k<256) || W.has(c); }).join('');
+  return t.replace(/[ \t]+\n/g,'\n').replace(/\n{3,}/g,'\n\n').replace(/ {2,}/g,' ').trim();
+ }
+ function dispo(){ return !!(window.jspdf && window.jspdf.jsPDF); }
+
+ function creer(o){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({unit:'mm', format:'a4'});
+  const PW = doc.internal.pageSize.getWidth(), PH = doc.internal.pageSize.getHeight();
+  const M = 15, LARG = PW - 2*M, BAS = PH - 18;
+  let y = 0;
+  const couleur = (c)=>doc.setTextColor(c[0],c[1],c[2]);
+  const fond = (c)=>doc.setFillColor(c[0],c[1],c[2]);
+  const trait = (c)=>doc.setDrawColor(c[0],c[1],c[2]);
+  const place = (h)=>{ if(y + h > BAS){ doc.addPage(); y = M; return true; } return false; };
+  const lignes = (s, l, taille, style)=>{ doc.setFont('helvetica', style||'normal'); doc.setFontSize(taille); return doc.splitTextToSize(txt(s), l); };
+  const LH = (taille)=>taille*0.42;
+
+  // ---- bandeau
+  const d = o.date || new Date();
+  const dd = d.toLocaleDateString('fr-FR') + ' à ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  const tl = lignes(o.titre, LARG, 15, 'bold');
+  const hb = 20 + tl.length*6.3 + (o.sous ? 5 : 0);
+  fond(C.prune); doc.rect(0,0,PW,hb,'F'); fond(C.rose); doc.rect(0,hb,PW,1.4,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(234,211,227);
+  doc.text(txt(o.bandeau).toUpperCase(), M, 10);
+  doc.setFontSize(15); doc.setTextColor(255,255,255); doc.text(tl, M, 18);
+  if(o.sous){ doc.setFont('helvetica','normal'); doc.setFontSize(9.5); doc.setTextColor(234,211,227); doc.text(txt(o.sous), M, 18 + tl.length*6.3); }
+  y = hb + 7;
+
+  // ---- identité
+  fond(C.pale); doc.roundedRect(M, y, LARG, 17, 2, 2, 'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); couleur(C.prune); doc.text('STAGIAIRE', M+4, y+5.5);
+  doc.setFontSize(12); couleur(C.texte); doc.text(txt(o.stagiaire || 'Non renseigné'), M+4, y+12);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8.5); couleur(C.gris);
+  doc.text('Réalisé le ' + dd, PW-M-4, y+12, {align:'right'});
+  y += 23;
+
+  const api = {
+   doc, txt,
+   score(gros, lib, etat){
+    place(22);
+    fond(etat==='ko' ? C.ko : (etat==='moyen' ? C.moyen : (etat==='ok' ? C.ok : C.prune)));
+    doc.roundedRect(M, y, LARG, 18, 2, 2, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(19); doc.setTextColor(255,255,255); doc.text(txt(gros), M+5, y+12);
+    doc.setFont('helvetica','normal'); doc.setFontSize(10);
+    const l = doc.splitTextToSize(txt(lib), LARG-60); doc.text(l, PW-M-5, y+ (l.length>1 ? 8 : 11), {align:'right'});
+    y += 24; return api;
+   },
+   h(titre){
+    place(16);
+    y += 2; doc.setFont('helvetica','bold'); doc.setFontSize(12.5); couleur(C.prune); doc.text(txt(titre), M, y+4);
+    trait(C.filet); doc.setLineWidth(0.5); doc.line(M, y+6.5, PW-M, y+6.5);
+    y += 11; return api;
+   },
+   p(s, opt){
+    opt = opt||{}; const t = opt.taille||10;
+    const l = lignes(s, LARG - (opt.retrait||0), t, opt.style);
+    couleur(opt.couleur||C.texte);
+    for(const x of l){ place(LH(t)+1); doc.text(x, M+(opt.retrait||0), y+LH(t)); y += LH(t)+0.9; }
+    y += opt.apres===undefined ? 2.5 : opt.apres; return api;
+   },
+   encadre(titre, s, etat){
+    const coul = etat==='ko' ? C.ko : (etat==='moyen' ? C.moyen : (etat==='ok' ? C.ok : C.rose));
+    const l = lignes(s, LARG-10, 9.8);
+    const h = 9 + l.length*(LH(9.8)+0.9) + 3;
+    place(Math.min(h, 60));
+    if(y + h > BAS){ // trop long pour une page : on l'écrit en paragraphes
+      api.p(titre, {style:'bold', taille:9, couleur:coul, apres:1}); return api.p(s);
+    }
+    fond([252,249,251]); doc.rect(M, y, LARG, h, 'F'); fond(coul); doc.rect(M, y, 1.6, h, 'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); couleur(coul); doc.text(txt(titre).toUpperCase(), M+5, y+5.5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9.8); couleur(C.texte);
+    doc.text(l, M+5, y+10.5, {lineHeightFactor:1.25});
+    y += h + 4; return api;
+   },
+   /* tableau : head = ['A','B'], rows = [[..],[..]], largeurs en fractions, etats facultatifs par ligne */
+   table(head, rows, fr, etats){
+    const larg = fr.map(f=>f*LARG), pad = 1.8, t = 8.8, lh = LH(t)+0.6;
+    const entete = ()=>{
+      const hl = head.map((h,i)=>lignes(h, larg[i]-2*pad, t, 'bold'));
+      const hh = Math.max(...hl.map(l=>l.length))*lh + 2*pad;
+      fond(C.pale); doc.rect(M, y, LARG, hh, 'F'); couleur(C.prune); doc.setFont('helvetica','bold'); doc.setFontSize(t);
+      let x = M; hl.forEach((l,i)=>{ doc.text(l, x+pad, y+pad+lh-0.8); x += larg[i]; });
+      y += hh;
+    };
+    place(20); entete();
+    rows.forEach((r,k)=>{
+      const cl = r.map((c,i)=>lignes(c, larg[i]-2*pad, t, i===0?'bold':'normal'));
+      const hr = Math.max(...cl.map(l=>l.length))*lh + 2*pad;
+      if(place(hr)) entete();
+      if(k%2===1){ fond([252,249,251]); doc.rect(M, y, LARG, hr, 'F'); }
+      let x = M;
+      cl.forEach((l,i)=>{
+        const e = etats && etats[k] && i===r.length-1 ? etats[k] : null;
+        couleur(e==='ok' ? C.ok : e==='ko' ? C.ko : e==='moyen' ? C.moyen : C.texte);
+        doc.setFont('helvetica', (i===0 || e) ? 'bold' : 'normal'); doc.setFontSize(t);
+        doc.text(l, x+pad, y+pad+lh-0.8); x += larg[i];
+      });
+      trait(C.filet); doc.setLineWidth(0.2); doc.line(M, y+hr, PW-M, y+hr);
+      y += hr;
+    });
+    y += 5; return api;
+   },
+   /* bloc de correction : barre verte ou rouge, titre, lignes de texte */
+   bloc(titre, items, etat){
+    const coul = etat==='ko' ? C.ko : (etat==='ok' ? C.ok : C.rose);
+    const parts = items.filter(x=>x).map(x=>typeof x==='string' ? {s:x} : x);
+    const tl = lignes(titre, LARG-8, 9.6, 'bold');
+    const pl = parts.map(p=>({l:lignes(p.s, LARG-8, 9.2, p.style), p}));
+    const h = 4 + tl.length*(LH(9.6)+0.8) + pl.reduce((s,x)=>s + x.l.length*(LH(9.2)+0.8) + 1.2, 0) + 2;
+    if(h < BAS - M) place(h);
+    const y0 = y, p0 = doc.internal.getCurrentPageInfo().pageNumber;
+    y += 4;
+    couleur(etat==='ko' ? C.ko : C.prune); doc.setFont('helvetica','bold'); doc.setFontSize(9.6);
+    for(const x of tl){ place(5); doc.text(x, M+5, y+LH(9.6)-0.6); y += LH(9.6)+0.8; }
+    pl.forEach(({l,p})=>{
+      doc.setFont('helvetica', p.style||'normal'); doc.setFontSize(9.2); couleur(p.couleur ? C[p.couleur] : C.texte);
+      for(const x of l){ if(place(5)) {} doc.text(x, M+5, y+LH(9.2)-0.6); y += LH(9.2)+0.8; }
+      y += 1.2;
+    });
+    if(doc.internal.getCurrentPageInfo().pageNumber === p0){
+      fond(coul); doc.rect(M, y0+1, 1.5, y-y0, 'F');
+    }
+    y += 4; return api;
+   },
+   espace(h){ y += h; return api; },
+   finir(){
+    const n = doc.internal.getNumberOfPages();
+    for(let i=1;i<=n;i++){
+      doc.setPage(i); doc.setFont('helvetica','normal'); doc.setFontSize(8); couleur(C.gris);
+      doc.text('TMK Performances - N° Siret : 49841924100027 - Code NAF : 8559A', PW/2, PH-8, {align:'center'});
+      doc.text(i + ' / ' + n, PW-M, PH-8, {align:'right'});
+    }
+    return api;
+   },
+   enregistrer(nom){
+    api.finir();
+    try { doc.save(nom); } catch(e) { window.open(doc.output('bloburl'), '_blank'); }
+    return api;
+   },
+   ouvrir(){ api.finir(); window.open(doc.output('bloburl'), '_blank'); return api; }
+  };
+  return api;
+ }
+ function nomFichier(prefixe, stagiaire){
+  const n = (stagiaire||'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^A-Za-z0-9]+/g,'_').replace(/^_|_$/g,'');
+  return prefixe + (n ? '_' + n : '') + '_' + new Date().toISOString().slice(0,10) + '.pdf';
+ }
+ /* Branche le bloc « PDF à déposer » de la page : champs nom/prénom, bouton, secours.
+    o.identite() renvoie le nom déjà connu (QCM avec écran d'identité) ou null ;
+    o.construire(stagiaire) renvoie l'objet PDF prêt ; o.prefixe nomme le fichier. */
+ function lms(){ const p = new URLSearchParams(location.search); return p.get('lms')==='1' || p.get('contexte')==='lms'; }
+ function brancher(o){
+  const racine = document.getElementById('depot'); if(!racine) return;
+  if(lms()) racine.querySelectorAll('.depot360').forEach(e=>e.style.display='none');
+  const connu = o.identite ? o.identite() : null;
+  const champs = document.getElementById('pdfChamps');
+  if(connu && champs) champs.style.display='none';
+  const err = document.getElementById('pdfErr');
+  const qui = ()=>{
+    if(connu) return connu;
+    const n = document.getElementById('pdfNom').value.trim(), p = document.getElementById('pdfPrenom').value.trim();
+    if(n.length<2 || p.length<2){ if(lms() && !n && !p) return ''; err.textContent = 'Indiquez votre nom et votre prénom : ils figurent sur le PDF que vous déposez.'; return null; }
+    return p + ' ' + n.toUpperCase();
+  };
+  const faire = (ouvrir)=>{
+    err.textContent = '';
+    if(!dispo()){ err.textContent = "Le module PDF n'a pas pu se charger. Vérifiez votre connexion, puis rechargez la page."; return; }
+    const s = qui(); if(s===null) return;
+    const pdf = o.construire(s);
+    if(ouvrir) pdf.ouvrir(); else pdf.enregistrer(nomFichier(o.prefixe, s));
+    document.getElementById('pdfOk').textContent = 'PDF généré. ' + (lms() ? '' : 'Déposez-le maintenant dans 360Learning.');
+  };
+  document.getElementById('pdfBtn').addEventListener('click', ()=>faire(false));
+  document.getElementById('pdfOuvrir').addEventListener('click', e=>{ e.preventDefault(); faire(true); });
+ }
+ return {creer, txt, dispo, nomFichier, brancher, lms};
+})();
+
+const EX = [
+ {
+  "titre": "Atelier 1 — La virgule",
+  "sub": "Où la mettre, où ne jamais la mettre · 8 phrases",
+  "consigne": "Choisissez le signe qui convient à l'emplacement signalé. Avant de mettre une virgule, demandez-vous quelle règle de la fiche mémo la justifie.",
+  "champs": [
+   {
+    "id": "a0q0",
+    "lb": "Le contrat que vous avez signé le 3 mars … prend effet le 1er avril.",
+    "options": [
+     "aucun signe",
+     "une virgule",
+     "un point",
+     "un deux-points"
+    ],
+    "rep": 0,
+    "pts": 1
+   },
+   {
+    "id": "a0q1",
+    "lb": "Dès réception de votre dossier … nous lancerons l'étude.",
+    "options": [
+     "aucun signe",
+     "une virgule",
+     "un point",
+     "un deux-points"
+    ],
+    "rep": 1,
+    "pts": 1
+   },
+   {
+    "id": "a0q2",
+    "lb": "Merci de joindre votre RIB, votre avis d'imposition … et un justificatif de domicile.",
+    "options": [
+     "une virgule",
+     "un point",
+     "aucun signe",
+     "un deux-points"
+    ],
+    "rep": 2,
+    "pts": 1
+   },
+   {
+    "id": "a0q3",
+    "lb": "Votre conseiller, M. Durand … vous rappellera demain.",
+    "options": [
+     "aucun signe",
+     "un point",
+     "un deux-points",
+     "une virgule"
+    ],
+    "rep": 3,
+    "pts": 1
+   },
+   {
+    "id": "a0q4",
+    "lb": "Nous vous adressons … le duplicata demandé.",
+    "options": [
+     "aucun signe",
+     "une virgule",
+     "un point",
+     "un deux-points"
+    ],
+    "rep": 0,
+    "pts": 1
+   },
+   {
+    "id": "a0q5",
+    "lb": "Si vous le souhaitez … nous pouvons vous rappeler.",
+    "options": [
+     "aucun signe",
+     "une virgule",
+     "un point",
+     "un deux-points"
+    ],
+    "rep": 1,
+    "pts": 1
+   },
+   {
+    "id": "a0q6",
+    "lb": "Nous avons reçu votre RIB … votre contrat et votre pièce d'identité.",
+    "options": [
+     "aucun signe",
+     "un point",
+     "une virgule",
+     "un deux-points"
+    ],
+    "rep": 2,
+    "pts": 1
+   },
+   {
+    "id": "a0q7",
+    "lb": "Nous ne pouvons pas valider le virement … car le RIB est incomplet.",
+    "options": [
+     "aucun signe",
+     "un point",
+     "un deux-points",
+     "une virgule"
+    ],
+    "rep": 3,
+    "pts": 1
+   }
+  ]
+ },
+ {
+  "titre": "Atelier 2 — Les autres signes",
+  "sub": "Questions, deux-points, etc., trait d'union, espaces · 7 phrases",
+  "consigne": "Choisissez le signe qui convient. Pour une question, demandez-vous si elle est directe (on attend une réponse à cette phrase) ou indirecte (elle est rapportée par « savoir si », « demander si »…).",
+  "champs": [
+   {
+    "id": "a1q0",
+    "lb": "Nous aimerions savoir si vous êtes disponible jeudi …",
+    "options": [
+     "un point d'interrogation",
+     "un point",
+     "un point d'exclamation",
+     "des points de suspension"
+    ],
+    "rep": 1,
+    "pts": 1
+   },
+   {
+    "id": "a1q1",
+    "lb": "Pourriez-vous nous confirmer votre adresse …",
+    "options": [
+     "un point",
+     "un point d'exclamation",
+     "un point d'interrogation",
+     "des points de suspension"
+    ],
+    "rep": 2,
+    "pts": 1
+   },
+   {
+    "id": "a1q2",
+    "lb": "Il nous manque un document … votre dernier avis d'imposition.",
+    "options": [
+     "un point",
+     "un point-virgule",
+     "aucun signe",
+     "un deux-points"
+    ],
+    "rep": 3,
+    "pts": 1
+   },
+   {
+    "id": "a1q3",
+    "lb": "Joignez vos justificatifs (factures, relevés, etc …).",
+    "options": [
+     "un point",
+     "trois points de suspension",
+     "un point puis des points de suspension",
+     "aucun signe"
+    ],
+    "rep": 0,
+    "pts": 1
+   },
+   {
+    "id": "a1q4",
+    "lb": "Pouvez…vous nous rappeler ?",
+    "options": [
+     "une espace",
+     "un trait d'union",
+     "une virgule",
+     "aucun signe"
+    ],
+    "rep": 1,
+    "pts": 1
+   },
+   {
+    "id": "a1q5",
+    "lb": "Merci de nous rappeler au 03 20 00 00 00 …",
+    "options": [
+     "un point d'interrogation",
+     "un deux-points",
+     "un point",
+     "des points de suspension"
+    ],
+    "rep": 2,
+    "pts": 1
+   },
+   {
+    "id": "a1q6",
+    "lb": "Devant un point-virgule, on place …",
+    "options": [
+     "aucune espace",
+     "une virgule",
+     "un trait d'union",
+     "une espace"
+    ],
+    "rep": 3,
+    "pts": 1
+   }
+  ]
+ },
+ {
+  "titre": "Atelier 3 — Les majuscules",
+  "sub": "Jours, accents, abréviations, nationalités · 6 phrases",
+  "consigne": "Choisissez la forme correcte. Une majuscule ne se justifie qu'en début de phrase ou pour un nom propre ; une capitale garde ses accents.",
+  "champs": [
+   {
+    "id": "a2q0",
+    "lb": "Votre rendez-vous est fixé au … 3 mars.",
+    "options": [
+     "Mardi",
+     "MARDI",
+     "mardi",
+     "Mar."
+    ],
+    "rep": 2,
+    "pts": 1
+   },
+   {
+    "id": "a2q1",
+    "lb": "… compter du 1er janvier, le tarif évolue.",
+    "options": [
+     "A",
+     "a",
+     "à",
+     "À"
+    ],
+    "rep": 3,
+    "pts": 1
+   },
+   {
+    "id": "a2q2",
+    "lb": "Votre conseiller, … Durand, vous rappellera.",
+    "options": [
+     "M.",
+     "Mr",
+     "Mr.",
+     "Mme."
+    ],
+    "rep": 0,
+    "pts": 1
+   },
+   {
+    "id": "a2q3",
+    "lb": "Nos clients … bénéficient du même tarif.",
+    "options": [
+     "Belges",
+     "belges",
+     "BELGES",
+     "Belge"
+    ],
+    "rep": 1,
+    "pts": 1
+   },
+   {
+    "id": "a2q4",
+    "lb": "Deux options s'offrent à vous : … remboursement ou l'avoir.",
+    "options": [
+     "Le",
+     "LE",
+     "le",
+     "Les"
+    ],
+    "rep": 2,
+    "pts": 1
+   },
+   {
+    "id": "a2q5",
+    "lb": "« Madame, » puis, à la ligne : « … avons bien reçu votre courrier. »",
+    "options": [
+     "nous",
+     "NOUS",
+     "nous,",
+     "Nous"
+    ],
+    "rep": 3,
+    "pts": 1
+   }
+  ]
+ },
+ {
+  "titre": "Atelier 4 — La phrase lisible",
+  "sub": "Couper, puis relier · 6 phrases",
+  "consigne": "Pour les trois premières phrases, deux idées sont collées sans ponctuation : indiquez après quel mot placer le point. Pour les trois suivantes, choisissez le connecteur qui exprime le bon lien logique.",
+  "champs": [
+   {
+    "id": "a3q0",
+    "lb": "« Nous avons bien reçu votre dossier il sera étudié dès lundi par notre service. » Le point se place après …",
+    "options": [
+     "« reçu »",
+     "« dossier »",
+     "« étudié »",
+     "« lundi »"
+    ],
+    "rep": 1,
+    "pts": 1
+   },
+   {
+    "id": "a3q1",
+    "lb": "« Votre carte arrivera dans les huit jours vous recevrez votre code confidentiel séparément. » Le point se place après …",
+    "options": [
+     "« carte »",
+     "« arrivera »",
+     "« jours »",
+     "« recevrez »"
+    ],
+    "rep": 2,
+    "pts": 1
+   },
+   {
+    "id": "a3q2",
+    "lb": "« Le virement a été effectué ce matin les fonds seront disponibles demain. » Le point se place après …",
+    "options": [
+     "« virement »",
+     "« effectué »",
+     "« ce »",
+     "« matin »"
+    ],
+    "rep": 3,
+    "pts": 1
+   },
+   {
+    "id": "a3q3",
+    "lb": "Votre dossier est complet. … nous pouvons lancer l'étude.",
+    "options": [
+     "Pourtant,",
+     "Par conséquent,",
+     "En revanche,",
+     "Sinon,"
+    ],
+    "rep": 1,
+    "pts": 1
+   },
+   {
+    "id": "a3q4",
+    "lb": "Votre demande est arrivée après la date limite. … nous l'acceptons à titre exceptionnel.",
+    "options": [
+     "Néanmoins,",
+     "Donc,",
+     "Ainsi,",
+     "C'est pourquoi"
+    ],
+    "rep": 0,
+    "pts": 1
+   },
+   {
+    "id": "a3q5",
+    "lb": "Ce contrat couvre les dégâts des eaux. … il prend en charge votre relogement.",
+    "options": [
+     "Pourtant,",
+     "Au contraire,",
+     "Sinon,",
+     "De plus,"
+    ],
+    "rep": 3,
+    "pts": 1
+   }
+  ]
+ }
+];
+
+const TOTAL = EX.reduce((s,a)=>s+a.champs.reduce((t,c)=>t+c.pts,0),0);
+const etat = EX.map(()=>({valide:false,score:0}));
+
+function phrase(lb){ return lb.replace('…','<span class="trou">…</span>'); }
+
+function rendre(){
+  document.getElementById('ateliers').innerHTML = EX.map((a,i)=>{
+    const pts = a.champs.reduce((t,c)=>t+c.pts,0);
+    return `
+    <h2><span class="num">${i+1} ·</span>${a.titre}</h2>
+    <div class="carte" id="at${i}">
+      <p style="font-size:14.5px;color:var(--gris-moyen);margin-top:0">${a.sub}</p>
+      <div class="situ">${a.consigne}</div>
+      ${a.champs.map(c=>`
+        <div class="champ" id="ch_${c.id}">
+          <span class="phrase">${phrase(c.lb)}</span>
+          <select class="ch" id="${c.id}"><option value="">— choisir —</option>${c.options.map((o,j)=>`<option value="${j}">${o}</option>`).join('')}</select>
+          <span class="pts">${c.pts} pt</span>
+          <span class="verdict" id="v_${c.id}"></span>
+        </div>`).join('')}
+      <div class="barre">
+        <button class="btn" id="btn${i}">Valider l'atelier ${i+1}</button>
+        <span class="pts">Atelier noté sur ${pts} points</span>
+        <span id="fige${i}"></span>
+      </div>
+    </div>`;
+  }).join('');
+  EX.forEach((a,i)=>document.getElementById('btn'+i).addEventListener('click',()=>valider(i)));
+}
+
+function valider(i){
+  if(etat[i].valide) return;
+  const a = EX[i];
+  // contrôle de complétude AVANT toute correction
+  for(const c of a.champs){
+    const el = document.getElementById(c.id);
+    if(el.value===''){ alert("Répondez à toutes les phrases de l'atelier avant de valider."); el.focus(); return; }
+  }
+  let score = 0; const choix = [];
+  a.champs.forEach(c=>{
+    const el = document.getElementById(c.id);
+    const juste = parseInt(el.value,10) === c.rep;
+    choix.push(parseInt(el.value,10));
+    if(juste) score += c.pts;
+    el.disabled = true;
+    document.getElementById('ch_'+c.id).classList.add(juste?'just':'faux');
+    const v = document.getElementById('v_'+c.id);
+    v.className = 'verdict ' + (juste?'ok':'ko');
+    v.textContent = juste ? '✓ juste' : '✗ attendu : ' + c.options[c.rep];
+  });
+  etat[i] = {valide:true, score:score, choix:choix};
+  const b = document.getElementById('btn'+i);
+  b.textContent = 'Atelier validé'; b.disabled = true;
+  document.getElementById('fige'+i).innerHTML = '<span class="fige">Réponses figées</span>';
+  bilan();
+}
+
+function bilan(){
+  const faits = etat.filter(e=>e.valide).length;
+  if(faits < EX.length){
+    document.getElementById('final').innerHTML =
+      `<div class="carte"><div class="enc"><span class="t">AVANCEMENT</span>${faits} atelier${faits>1?'s':''} sur ${EX.length} validé${faits>1?'s':''}.</div></div>`;
+    return;
+  }
+  const s = etat.reduce((t,e)=>t+e.score,0);
+  const pct = Math.round(s/TOTAL*100);
+  let mot;
+  if(pct>=90) mot = "Les règles de ponctuation et de majuscules sont acquises. Vous pouvez passer au QCM de la séquence.";
+  else if(pct>=70) mot = "L'essentiel est en place. Relisez dans la fiche mémo la règle de l'atelier où vous avez perdu le plus de points, puis passez au QCM.";
+  else if(pct>=50) mot = "Les règles sont connues mais pas encore appliquées. Reprenez la fiche mémo et l'exemple commenté, refaites l'exercice, puis passez au QCM.";
+  else mot = "Reprenez la fiche mémo règle par règle, en vous demandant pour chaque exemple quel signe ou quelle majuscule il illustre, avant de refaire l'exercice.";
+  document.getElementById('final').innerHTML = `
+   <h2><span class="num">${EX.length+1} ·</span>Votre bilan</h2>
+   <div class="score"><span class="gros">${s} / ${TOTAL}</span><span class="lib">${pct} % — ${EX.length} ateliers traités</span></div>
+   <div class="carte">
+    <table><thead><tr><th>Atelier</th><th>Points</th></tr></thead><tbody>
+    ${EX.map((a,i)=>`<tr><td>${a.titre}</td><td class="n">${etat[i].score} / ${a.champs.length}</td></tr>`).join('')}
+    <tr class="tot"><td>Total</td><td class="n">${s} / ${TOTAL}</td></tr>
+    </tbody></table>
+    <div class="enc"><span class="t">CE QUE VOUS EN FAITES</span>${mot}</div>
+    <div class="enc ci"><span class="t">LES QUATRE RÉFLEXES DE LA SÉQUENCE</span>① Une virgule : quelle règle la justifie ? Jamais entre le sujet et son verbe ; une incise prend deux virgules. ② Une question : directe, elle prend un point d'interrogation ; indirecte, un point. ③ Une majuscule : début de phrase ou nom propre, avec ses accents. ④ Une phrase trop longue : coupez, puis reliez.</div>
+   </div>`;
+  BILAN = {s, pct, mot};
+  document.getElementById('depotZone').style.display = 'block';
+}
+let BILAN = null;
+PDFTMK.brancher({prefixe:'Exercice_S3', construire:(stag)=>{
+  const P = PDFTMK.creer({bandeau:"Écrits professionnels · @learning / Séquence 3",
+    titre:"Exercice — Ponctuer juste et écrire lisible",
+    sous:"Bilan de l’exercice d’entraînement", stagiaire:stag});
+  P.score(BILAN.s + ' / ' + TOTAL, BILAN.pct + ' % — ' + EX.length + ' ateliers traités', BILAN.pct>=90?'ok':BILAN.pct>=50?'moyen':'ko');
+  P.encadre('Ce que vous en faites', BILAN.mot);
+  P.table(['Atelier','Points'], EX.map((a,i)=>[a.titre, etat[i].score + ' / ' + a.champs.length]).concat([['Total', BILAN.s + ' / ' + TOTAL]]), [.8,.2]);
+  EX.forEach((a,i)=>{
+    P.h(a.titre);
+    P.table(['Phrase','Votre réponse','Réponse attendue'], a.champs.map((c,k)=>[c.lb.replace('…','[ ... ]'), c.options[etat[i].choix[k]], c.options[c.rep]]),
+      [.56,.22,.22], a.champs.map((c,k)=>etat[i].choix[k]===c.rep?'ok':'ko'));
+  });
+  P.encadre("LES QUATRE RÉFLEXES DE LA SÉQUENCE", "① Une virgule : quelle règle la justifie ? Jamais entre le sujet et son verbe ; une incise prend deux virgules. ② Une question : directe, elle prend un point d'interrogation ; indirecte, un point. ③ Une majuscule : début de phrase ou nom propre, avec ses accents. ④ Une phrase trop longue : coupez, puis reliez.");
+  return P;
+}});
+
+document.getElementById('rejouer').addEventListener('click',()=>{ location.reload(); });
+rendre();
+</script>
+</body></html>
